@@ -3,60 +3,60 @@
 <head>
   <meta charset="UTF-8">
   <title>Osmose API Data Fetcher</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    form { margin-bottom: 20px; }
-    input, button { padding: 8px; margin: 5px 0; width: 100%; max-width: 300px; }
-    label { font-weight: bold; }
-    .error { color: red; }
-    pre { background: #f4f4f4; padding: 10px; overflow: auto; }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h1>Osmose API Data Fetcher</h1>
-  <form id="osmoseForm">
-    <label for="country">Country/State:</label>
-    <input type="text" id="country" name="country" required placeholder="e.g., US">
-    
-    <label for="item">Issue Type (item):</label>
-    <input type="number" id="item" name="item" value="7040" required>
-    
-    <label for="class">Class:</label>
-    <input type="number" id="class" name="class" value="2" required>
-    
-    <label for="limit">Limit:</label>
-    <input type="number" id="limit" name="limit" value="500" required>
-    
-    <button type="submit">Fetch Data</button>
-  </form>
-  
-  <div id="message"></div>
-  <pre id="output"></pre>
-  <button id="downloadBtn" style="display:none;">Download GeoJSON</button>
+  <div class="card">
+    <div class="card-split">
+      <div class="card-logo">
+        <h2 class="logo-title">OSMOSE PER COUNTRY</h2>
+        <img src="logo.png" alt="Logo">
+      </div>
+      <div class="card-form">
+        <form id="osmoseForm">
+          <div class="input">
+            <input type="text" id="country" name="country" class="input-field" placeholder=" " required>
+            <label for="country" class="input-label">Country</label>
+          </div>
+          <div class="input">
+            <input type="number" id="item" name="item" class="input-field" value="7040" placeholder=" " required>
+            <label for="item" class="input-label">Issue Type (item)</label>
+          </div>
+          <div class="input">
+            <input type="number" id="class" name="class" class="input-field" value="2" placeholder=" " required>
+            <label for="class" class="input-label">Class</label>
+          </div>
+          <div class="action">
+            <button type="submit" class="action-button">Fetch Data</button>
+          </div>
+        </form>
+        <div id="message"></div>
+        <div class="supported-links">
+          <a href="https://osmose.openstreetmap.fr/api/0.3/countries" target="_blank" rel="noopener noreferrer">Supported Countries</a>
+          &nbsp;|&nbsp;
+          <a href="https://wiki.openstreetmap.org/wiki/Osmose/issues" target="_blank" rel="noopener noreferrer">Issue Types</a>
+        </div>
+      </div>
+    </div>
+  </div>
   
   <script>
     document.getElementById('osmoseForm').addEventListener('submit', function(e) {
       e.preventDefault();
-      // Clear previous messages and output
       document.getElementById('message').textContent = '';
-      document.getElementById('output').textContent = '';
-      document.getElementById('downloadBtn').style.display = 'none';
       
-      // Retrieve form data
       const country = document.getElementById('country').value.trim();
       const item = document.getElementById('item').value;
       const cls = document.getElementById('class').value;
-      const limit = document.getElementById('limit').value;
       
-      if (!country || !item || !cls || !limit) {
+      if (!country || !item || !cls) {
         document.getElementById('message').textContent = 'All fields are required.';
         return;
       }
       
-      // Construct the API URL
-      const apiUrl = `https://osmose.openstreetmap.fr/api/0.3/issues.json?country=${encodeURIComponent(country)}&item=${encodeURIComponent(item)}&class=${encodeURIComponent(cls)}&limit=${encodeURIComponent(limit)}`;
       
-      // Fetch data from the API
+      const apiUrl = `https://osmose.openstreetmap.fr/api/0.3/issues.json?country=${encodeURIComponent(country)}&item=${encodeURIComponent(item)}&class=${encodeURIComponent(cls)}`;
+      
       fetch(apiUrl)
         .then(response => {
           if (!response.ok) {
@@ -65,7 +65,6 @@
           return response.json();
         })
         .then(data => {
-          // Process data similar to the Python script
           const issues = [];
           if (data && data.issues) {
             data.issues.forEach(issue => {
@@ -87,29 +86,22 @@
             });
           }
           
-          // Build the GeoJSON object
           const geojson = {
             type: "FeatureCollection",
             features: issues
           };
           
-          // Display the JSON data in a pre-formatted block
-          document.getElementById('output').textContent = JSON.stringify(geojson, null, 2);
-          
-          // Provide a download option if there are any issues found
           if (issues.length > 0) {
+            
             const blob = new Blob([JSON.stringify(geojson, null, 2)], {type: "application/json"});
             const url = URL.createObjectURL(blob);
-            const downloadBtn = document.getElementById('downloadBtn');
-            downloadBtn.style.display = 'inline-block';
-            downloadBtn.onclick = function() {
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = 'osmose_data.geojson';
-              document.body.appendChild(a);
-              a.click();
-              document.body.removeChild(a);
-            };
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${country}_osmose_issue.geojson`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
           } else {
             document.getElementById('message').textContent = 'No issues found for the given parameters.';
           }
