@@ -41,22 +41,40 @@
   </div>
   
   <script>
+    function levenshtein(a, b) {
+      const matrix = [];
+      for (let i = 0; i <= b.length; i++) {
+        matrix[i] = [i];
+      }
+      for (let j = 0; j <= a.length; j++) {
+        matrix[0][j] = j;
+      }
+      for (let i = 1; i <= b.length; i++) {
+        for (let j = 1; j <= a.length; j++) {
+          if (b.charAt(i - 1) === a.charAt(j - 1)) {
+            matrix[i][j] = matrix[i - 1][j - 1];
+          } else {
+            matrix[i][j] = Math.min(
+              matrix[i - 1][j - 1] + 1,
+              Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1)
+            );
+          }
+        }
+      }
+      return matrix[b.length][a.length];
+    }
+    
     document.getElementById('osmoseForm').addEventListener('submit', function(e) {
       e.preventDefault();
       document.getElementById('message').textContent = '';
-      
-      const country = document.getElementById('country').value.trim();
+      const country = document.getElementById('country').value.trim().toLowerCase();
       const item = document.getElementById('item').value;
       const cls = document.getElementById('class').value;
-      
       if (!country || !item || !cls) {
         document.getElementById('message').textContent = 'All fields are required.';
         return;
       }
-      
-      
       const apiUrl = `https://osmose.openstreetmap.fr/api/0.3/issues.json?country=${encodeURIComponent(country)}&item=${encodeURIComponent(item)}&class=${encodeURIComponent(cls)}`;
-      
       fetch(apiUrl)
         .then(response => {
           if (!response.ok) {
@@ -73,26 +91,14 @@
               if (lat !== undefined && lon !== undefined) {
                 issues.push({
                   type: "Feature",
-                  properties: {
-                    id: issue.id,
-                    item: issue.item || "Unknown"
-                  },
-                  geometry: {
-                    type: "Point",
-                    coordinates: [lon, lat]
-                  }
+                  properties: { id: issue.id, item: issue.item || "Unknown" },
+                  geometry: { type: "Point", coordinates: [lon, lat] }
                 });
               }
             });
           }
-          
-          const geojson = {
-            type: "FeatureCollection",
-            features: issues
-          };
-          
+          const geojson = { type: "FeatureCollection", features: issues };
           if (issues.length > 0) {
-            
             const blob = new Blob([JSON.stringify(geojson, null, 2)], {type: "application/json"});
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -103,7 +109,30 @@
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
           } else {
-            document.getElementById('message').textContent = 'No issues found for the given parameters.';
+            fetch("https://osmose.openstreetmap.fr/api/0.3/countries")
+              .then(res => res.json())
+              .then(countryData => {
+                const supported = countryData.countries;
+                const inputCountry = country.toLowerCase();
+                let substringMatches = supported.filter(c => 
+                  c.toLowerCase().includes(inputCountry) && c.toLowerCase() !== inputCountry
+                );
+                let suggestions;
+                if (substringMatches.length > 0) {
+                  suggestions = substringMatches;
+                } else {
+                  suggestions = supported
+                    .filter(c => c.toLowerCase() !== inputCountry)
+                    .map(c => ({ name: c, distance: levenshtein(inputCountry, c.toLowerCase()) }));
+                  suggestions.sort((a, b) => a.distance - b.distance);
+                  suggestions = suggestions.map(s => s.name);
+                }
+                const topSuggestions = suggestions.slice(0, 3);
+                document.getElementById('message').textContent = `No issues found. Here similar options for this regions: ${topSuggestions.join(", ")}?`;
+              })
+              .catch(err => {
+                document.getElementById('message').textContent = 'No issues found and unable to fetch supported country names.';
+              });
           }
         })
         .catch(error => {
