@@ -20,12 +20,12 @@ This is a front end interface that allows fetching data on gaps in the OSM data 
    git clone https://github.com/yourusername/osmose-api-data-fetcher.git
    ```
 2. Ensure the repository includes:
-   - `osmose_country_script.html`
+   - `index.html`
    - `styles.css`
    - `logo.png` (your logo image)
 
 3. **Run Locally:**  
-   Open `osmose_country_script.html` in your browser to test the application.
+   Open `index.html` in your browser to test the application.
 
 ## Useful Links
 
