@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>OSMOSE API Proof of Concept</title>
+  </head>
+  <body>
+    <h1>OSMOSE API Proof of Concept</h1>
+    <form id="osmoseForm">
+      <label for="country">Enter country or state name:</label>
+      <input type="text" id="country" name="country" required>
+      <button type="submit">Fetch Issues</button>
+    </form>
+    <pre id="results" style="white-space: pre-wrap; border:1px solid #ccc; padding:10px; margin-top:20px;"></pre>
+    
+    <script>
+      document.getElementById('osmoseForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const country = document.getElementById('country').value.trim();
+        if (!country) {
+          alert('Please enter a country or state name.');
+          return;
+        }
+        
+        // Construct the API URL.
+        const apiUrl = `https://osmose.openstreetmap.fr/api/0.3/issues.json?country=${encodeURIComponent(country)}&item=7040&class=2&limit=500`;
+        
+        // Make the API request using fetch.
+        fetch(apiUrl)
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok: ' + response.statusText);
+            }
+            return response.json();
+          })
+          .then(data => {
+            // For this proof of concept, we simply display the raw JSON response.
+            document.getElementById('results').textContent = JSON.stringify(data, null, 2);
+          })
+          .catch(error => {
+            console.error('Fetch error:', error);
+            document.getElementById('results').textContent = 'Error fetching data: ' + error;
+          });
+      });
+    </script>
+  </body>
+</html>
