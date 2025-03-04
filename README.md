@@ -22,7 +22,7 @@ This is a front end interface that allows fetching data on gaps in the OSM data 
 2. Ensure the repository includes:
    - `index.html`
    - `styles.css`
-   - `logo.png` (your logo image)
+   - `logo.png` 
 
 3. **Run Locally:**  
    Open `index.html` in your browser to test the application.
