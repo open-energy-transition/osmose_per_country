@@ -7,7 +7,7 @@ Visit the website [here](https://open-energy-transition.github.io/osmose_per_cou
 
 1. **Input Parameters:**  
    Fill out the form with the following:
-   - **Country:** The name of the country for which data is to be retrieved. Some states and province names are also supported. A list of all supported regions can be found in the [Osmose Countries API](https://osmose.openstreetmap.fr/api/0.3/countries). To get all regions from a country at once, you can use a wildcard character (*). For example, nigeria* will give you all regions of Nigeria.
+   - **Country:** The name of the country for which data is to be retrieved. Some states and province names are also supported. A list of all supported regions can be found in the [Osmose Countries API](https://osmose.openstreetmap.fr/api/0.3/countries). To get all regions from a country at once, you can use a wildcard character (\*). For example, nigeria\* will give you all regions of Nigeria.
    - **Issue Type (item):** The specific issue type code.
    - **Class:** The classification code for the issues.
 
