@@ -74,7 +74,7 @@
         document.getElementById('message').textContent = 'All fields are required.';
         return;
       }
-      const apiUrl = `https://osmose.openstreetmap.fr/api/0.3/issues.json?country=${encodeURIComponent(country)}&item=${encodeURIComponent(item)}&class=${encodeURIComponent(cls)}`;
+      const apiUrl = `https://osmose.openstreetmap.fr/api/0.3/issues.json?country=${encodeURIComponent(country)}&item=${encodeURIComponent(item)}&class=${encodeURIComponent(cls)}&limit=500`;
       fetch(apiUrl)
         .then(response => {
           if (!response.ok) {
