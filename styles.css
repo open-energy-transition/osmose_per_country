@@ -9,13 +9,25 @@ body {
   font-family: "DM Sans", sans-serif;
   line-height: 1.5;
   margin: 0;
-  padding: 0;
+  padding: 2rem 0; 
   background: #FFF4E6; 
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   min-height: 100vh;
-  position: relative;
+}
+
+.ribbon {
+  width: 850px;
+  max-width: 95%; 
+  margin: 0 auto 1rem; 
+  background-color: #6658d3;
+  color: #fff;
+  text-align: left;
+  padding: 10px;
+  font-size: 0.95rem;
+  border-radius: 6px;
 }
 
 input {
@@ -30,8 +42,9 @@ input {
   border-radius: 10px;
   box-shadow: 0 10px 20px 0 rgba(153, 153, 153, 0.25);
   overflow: hidden;
-  width: 100%;
-  max-width: 850px;
+  width: 850px; 
+  max-width: 95%;
+  margin: 0 auto; 
 }
 
 .card-split {

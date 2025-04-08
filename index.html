@@ -6,6 +6,11 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <div class="ribbon">
+    This tool fetches issues from the Osmose API and outputs them as a GeoJSON file.
+    For countries like France or Nigeria that are broken down into regions, add an asterisk (e.g. "france*") to export the entire country. The tool will also suggest similar country names if the input is not found.
+  </div>
+  
   <div class="card">
     <div class="card-split">
       <div class="card-logo">
@@ -18,19 +23,63 @@
             <input type="text" id="country" name="country" class="input-field" placeholder=" " required>
             <label for="country" class="input-label">Country</label>
           </div>
+          
           <div class="input">
-            <input type="number" id="item" name="item" class="input-field" value="7040" placeholder=" " required>
-            <label for="item" class="input-label">Issue Type (item)</label>
+            <select id="issueType" name="issueType" class="input-field" required>
+              <option value="" disabled selected>Select an Issue</option>
+              <optgroup label="Power lines (item 7040)">
+                <option value="7040:1">Lone power tower or pole (Class 1)</option>
+                <option value="7040:2">Unfinished power transmission line (Class 2)</option>
+                <option value="7040:3">Connection between different voltages (Class 3)</option>
+                <option value="7040:4">None power node on power way (Class 4)</option>
+                <option value="7040:5">Missing power tower or pole (Class 5)</option>
+                <option value="7040:6">Unfinished power distribution line (Class 6)</option>
+                <option value="7040:7">Unmatched voltage of line on substation (Class 7)</option>
+                <option value="7040:8">Power support line management suggestion (Class 8)</option>
+                <option value="7040:95">missing power=line in the area (Class 95)</option>
+              </optgroup>
+              <optgroup label="Power substation, ref not integrated (item 7190)">
+                <option value="7190:2">Power substation is not known by the operator or misses substation=* value (Class 2)</option>
+                <option value="7190:22">Power line branch not known by the operator (Class 22)</option>
+              </optgroup>
+              <optgroup label="Power plant (item 8270)">
+                <option value="8270:1">Power plant not integrated, geocoded at municipality level (Class 1)</option>
+                <option value="8270:6">Wind turbine not integrated (Class 6)</option>
+              </optgroup>
+              <optgroup label="Power substation (item 8280)">
+                <option value="8280:1">Power substation missing in OSM or without tag "ref:FR:RTE" (Class 1)</option>
+                <option value="8280:11">Minor distribution power substation missing in OSM (Class 11)</option>
+                <option value="8280:21">Power line branch is missing in OSM or without tag "ref:FR:RTE" (Class 21)</option>
+                <option value="8280:94">power=substation from opendata (Class 94)</option>
+              </optgroup>
+              <optgroup label="Power substation, could be integrated (item 8281)">
+                <option value="8281:3">Power substation, integration suggestion (Class 3)</option>
+                <option value="8281:13">Power minor distribution substation, integration suggestion (Class 13)</option>
+                <option value="8281:23">Power line branch, integration suggestion (Class 23)</option>
+                <option value="8281:94">power=substation from opendata (Class 94)</option>
+              </optgroup>
+              <optgroup label="Power substation, need update (item 8282)">
+                <option value="8282:4">Power substation update (Class 4)</option>
+                <option value="8282:24">Power line branch update (Class 24)</option>
+              </optgroup>
+              <optgroup label="Power support (item 8290)">
+                <option value="8290:1">Power support not integrated (Class 1)</option>
+                <option value="8290:2">Power support, line management suggestion (Class 2)</option>
+                <option value="8290:10">Power line not integrated (Class 10)</option>
+                <option value="8290:1001">Power pole not integrated (Class 1001)</option>
+                <option value="8290:1004">Power pole update (Class 1004)</option>
+                <option value="8290:1011">Power pole not integrated (Class 1011)</option>
+              </optgroup>
+            </select>
+            <label for="issueType" class="input-label">Issue Type</label>
           </div>
-          <div class="input">
-            <input type="number" id="class" name="class" class="input-field" value="2" placeholder=" " required>
-            <label for="class" class="input-label">Class</label>
-          </div>
+          
           <div class="action">
             <button type="submit" class="action-button">Fetch Data</button>
           </div>
         </form>
         <div id="message"></div>
+        
         <div class="supported-links">
           <a href="https://osmose.openstreetmap.fr/api/0.3/countries" target="_blank" rel="noopener noreferrer">Supported Countries</a>
           &nbsp;|&nbsp;
@@ -68,13 +117,16 @@
       e.preventDefault();
       document.getElementById('message').textContent = '';
       const country = document.getElementById('country').value.trim().toLowerCase();
-      const item = document.getElementById('item').value;
-      const cls = document.getElementById('class').value;
-      if (!country || !item || !cls) {
+      const issueSelect = document.getElementById('issueType');
+      
+      if (!country || !issueSelect.value) {
         document.getElementById('message').textContent = 'All fields are required.';
         return;
       }
+      
+      const [item, cls] = issueSelect.value.split(':');
       const apiUrl = `https://osmose.openstreetmap.fr/api/0.3/issues.json?country=${encodeURIComponent(country)}&item=${encodeURIComponent(item)}&class=${encodeURIComponent(cls)}&limit=500`;
+      
       fetch(apiUrl)
         .then(response => {
           if (!response.ok) {
@@ -128,10 +180,12 @@
                   suggestions = suggestions.map(s => s.name);
                 }
                 const topSuggestions = suggestions.slice(0, 3);
-                document.getElementById('message').textContent = `No issues found. Here similar options for this regions: ${topSuggestions.join(", ")}?`;
+                document.getElementById('message').textContent = 
+                  `No issues found. Here are similar options for this region: ${topSuggestions.join(", ")}?`;
               })
               .catch(err => {
-                document.getElementById('message').textContent = 'No issues found and unable to fetch supported country names.';
+                document.getElementById('message').textContent = 
+                  'No issues found and unable to fetch supported country names.';
               });
           }
         })
